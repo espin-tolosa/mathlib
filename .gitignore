@@ -1,0 +1,83 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.s
+*.i
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+build/
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+.trash/
+legacy/
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# VIM Swap
+[._]*.s[a-v][a-z]
+!*.svg  # comment out if you don't need vector files
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# VIM Session
+Session.vim
+Sessionx.vim
+
+# VIM Temporary
+.netrwhist
+*~
+# VIM Auto-generated tag files
+tags
+# VIM Persistent undo
+[._]*.un~
+
+# Editors
+.vscode/
+
+# Test results
+*.mlog
