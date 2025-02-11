@@ -1,15 +1,24 @@
-CCFLAGS := -Wall -Wextra -Wpedantic
+CCFLAGS := -Wall -Wextra -Wpedantic -O0
 LDFLAGS := -L. -lfptest
 
+PREFIX	:= test_math
 
-test_sin:
-	$(CC) $(CCFLAGS) test_math_sin.c -o test_math_sin.exe $(LDFLAGS)
+ifeq ($(shell (which $(CC) || where $(CC)) 2>/dev/null),)
+    CC := gcc
+endif
 
-test_pow:
-	$(CC) $(CCFLAGS) unity.c test_math_pow.c -o test_math_pow.exe $(LDFLAGS)
+.PHONY: to_integer sin pow
 
-run_sin:test_sin
-	./test_math_sin.exe
+COMPILE	:= $(CC) $(CCFLAGS) $(LDFLAGS)
 
-run_pow:test_pow
-	./test_math_pow.exe
+to_integer:
+	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe -frounding-math -fsignaling-nans
+
+sin:
+	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
+
+pow:
+	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
+
+run_%:%
+	@./$(PREFIX)_$<.exe

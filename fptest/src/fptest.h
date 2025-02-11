@@ -313,6 +313,11 @@ ADDAPI extern fp_radix10_t  ADDCALL fp_radix10_add( fp_radix10_t a, fp_radix10_t
 #define SIZEOF(array) ( sizeof( array ) / sizeof( (array)[0] ) )
 #define noinline __attribute__((__noinline__))
 
+/* UNIT TEST */
+#define TEST_INIT static int m_ntest_failed = 0
+#define TEST_ASSERT_EQUAL_FP64(a,b) do{if(!fp64_equals((a),(b))) { fprintf(stderr, "[ASSERTION FAILED] expect: %+.15e, given: %+.15e\n", (a),(b)); ++m_ntest_failed; }}while(0)
+#define TEST_RESULTS do{if(!m_ntest_failed) { fprintf(stderr, "\n%s: all test PASSED\n", __FILE__);}}while(0)
+
 #ifdef __cplusplus
 } // __cplusplus defined.
 #endif
