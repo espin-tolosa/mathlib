@@ -143,7 +143,7 @@ extern dnorm_t math_cwnormalize ( f64_t x, u16_t type )
 
 	const dw_t px = { .d = x };
 
-	result.f.w[ W0 ] = ( px.w[ W0 ] & SMMASK ) | ONEHALF;
+	result.f.w[ W0 ] = ( px.w[ W0 ] & SMMASK ) | EXPHALF;
 	result.f.w[ W1 ] =   px.w[ W1 ];
 	result.f.w[ W2 ] =   px.w[ W2 ];
 	result.f.w[ W3 ] =   px.w[ W3 ];
@@ -166,7 +166,7 @@ extern dnorm_t math_cwnormalize ( f64_t x, u16_t type )
 				result.e	= result.e - 1;
 			}
 
-			result.f.w[ W0 ] = ONEHALF | ( result.f.w[W0] & MMASK );
+			result.f.w[ W0 ] = EXPHALF | ( result.f.w[W0] & MMASK );
 
 			break;
 		}

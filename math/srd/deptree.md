@@ -164,7 +164,7 @@ extern dnorm_t d_cwnormalize ( f64_t x )
 
 		result.e  = ((i16_t) d_biased_exponent( px.w[ W0 ] )) - DBIAS;
 
-		result.f.w[ W0 ] = (px.w[ W0 ] & SMMASK) | ONEHALF ;
+		result.f.w[ W0 ] = (px.w[ W0 ] & SMMASK) | EXPHALF ;
 		result.f.w[ W1 ] = px.w[ W1 ];
 		result.f.w[ W2 ] = px.w[ W2 ];
 		result.f.w[ W3 ] = px.w[ W3 ];
@@ -196,7 +196,7 @@ extern dnorm_t d_cwnormalize ( f64_t x )
 		}
 
 		result.e	= result.e - 1;
-		result.f.u 	= ( mantissa & 0xFFFFFFFFFFFFF ) | ((u64_t)(px.w[ W0 ] & SMASK) | ONEHALF) << MOFF;
+		result.f.u 	= ( mantissa & 0xFFFFFFFFFFFFF ) | ((u64_t)(px.w[ W0 ] & SMASK) | EXPHALF) << MOFF;
 	}
 
 	else
@@ -408,7 +408,7 @@ extern dnorm_t d_cwnormalize ( f64_t x )
 
 		result.e  = ((i16_t) d_biased_exponent( px.w[ W0 ] )) - DBIAS;
 
-		result.f.w[ W0 ] = (px.w[ W0 ] & SMMASK) | ONEHALF ;
+		result.f.w[ W0 ] = (px.w[ W0 ] & SMMASK) | EXPHALF ;
 		result.f.w[ W1 ] = px.w[ W1 ];
 		result.f.w[ W2 ] = px.w[ W2 ];
 		result.f.w[ W3 ] = px.w[ W3 ];
@@ -440,7 +440,7 @@ extern dnorm_t d_cwnormalize ( f64_t x )
 		}
 
 		result.e	= result.e - 1;
-		result.f.u 	= ( mantissa & 0xFFFFFFFFFFFFF ) | ((u64_t)(px.w[ W0 ] & SMASK) | ONEHALF) << MOFF;
+		result.f.u 	= ( mantissa & 0xFFFFFFFFFFFFF ) | ((u64_t)(px.w[ W0 ] & SMASK) | EXPHALF) << MOFF;
 	}
 
 	else
