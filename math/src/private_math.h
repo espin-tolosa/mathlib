@@ -101,6 +101,7 @@ static const double invsqrt2 = 0.70710678118654752440084436210485;
 #define SMMASK  0x800F 					/* A mask for the sign (S) in W0 plus the four fractinal bits (M) in W0 */
 #define DBIAS   0x03FE 					/* The value emax−1 is subtracted from the bits of the exponent of a double to obtain the fraction 0.FFF... */
 #define ONEHALF 0x3FE0 					/* (DBIAS << DOFF) */
+#define EXPONE  0x3FF0					/* Exponent bit pattern corresponding to the range [1.0, 2.0) */
 #define SMASK   0x8000 					/* A mask for the sign in W0 */
 #define MMASK   0x000F 					/* A mask for the four fractional bits (M) in W0 */
 #define NBITS	(MOFF+DOFF)				/* Number of significand bits, also called precission p*/

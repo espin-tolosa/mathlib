@@ -4,6 +4,7 @@
 static f64_t math_significand( f64_t x );
 static u16_t math_biased_exponent( u16_t w0 );
 static f64_t math_intrnd_impl( f64_t x );
+static f64_t math_to_integer_impl( f64_t xabs );
 
 /*
  * math_abs
@@ -332,19 +333,24 @@ extern f64_t math_intrnd(f64_t x)
 	return ( result.d );
 }
 
-extern f64_t math_to_integer( f64_t x )
+extern f64_t math_to_integer2( f64_t x )
 {
-	volatile f64_t result;
+	volatile dw_t result;
 
-	static const f64_t beta_to_t_minus_one = 0x1p53;
+	static const f64_t beta_t_minus_one = 0x1p53;
 
-    result = x + beta_to_t_minus_one;
+	dw_t u 		= { .d = x };
+	dw_t s 		= { .d = x };
 
-    result = result - beta_to_t_minus_one;
+	s.w[ W0 ] 	= s.w[ W0 ] & SMASK;
+	u.w[ W0 ] 	= u.w[ W0 ] & EDMASK;
 
-    if( result > x )
+    result.d 	= u.d		+ beta_t_minus_one;
+    result.d 	= result.d	- beta_t_minus_one;
+
+    if( result.d > u.d )
     {
-        result = result - 1.0;
+        result.d = result.d - 1.0;
     }
 
 	else
@@ -352,7 +358,76 @@ extern f64_t math_to_integer( f64_t x )
 		/* NOP: rounding mode did not affect */
 	}
 
-	return ( result );
+	result.w[ W0 ] = s.w[ W0 ] | result.w[ W0 ];
+
+	return ( result.d );
+}
+
+extern f64_t math_to_integer( f64_t x )
+{
+	volatile dw_t result;
+
+	switch( math_type( x ) )
+	{
+		case ( NIL ):
+		case ( INF ):
+		case ( ZERO ):
+		{
+			result.d = x;
+			break;
+		}
+
+		case ( GRADZ ):
+		case ( FINITE ):
+		{
+			const dw_t xsign = { .d = x };
+
+			if( xsign.w[ W0 ] < EXPONE )
+			{
+				result.u = 0;
+			}
+
+			else
+			{
+				result.d = math_to_integer_impl( math_abs( x ) );
+			}
+
+			result.w[ W0 ] = result.w[ W0 ] | ( xsign.w[ W0 ] & SMASK );
+
+			break;
+		}
+
+		default: { /* NOP: not accessible */ break; }
+	}
+
+	return ( result.d );
+}
+
+static f64_t math_to_integer_impl( f64_t xabs )
+{
+	volatile dw_t result;
+
+	static const f64_t beta_to_t_minus_one = 0x1p52;
+
+	if( xabs >= beta_to_t_minus_one )
+	{
+		result.d = xabs;
+	}
+
+	else
+	{
+		result.d = xabs  	+ beta_to_t_minus_one;
+		result.d = result.d - beta_to_t_minus_one;
+
+		if( result.d > xabs )
+		{
+			result.d = result.d - 1.0;
+		}
+
+		else { /* NOP: rounding mode did not affect */ }
+	}
+
+	return ( result.d );
 }
 
 /*
