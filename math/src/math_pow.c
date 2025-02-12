@@ -158,7 +158,7 @@ static f128_t math_pow_impl( dnorm_t xn, f128_t y )
 
     i16_t zexp = ( i16_t ) math_pow_clamp( zl, -1074, +1024 );
 
-    const i16_t n = math_pow_safe_exp( y );
+    const i16_t n = math_pow_safe_exp( y ); /* TODO: this does not makes sense, as the parent switch has already handled y range */
 
     yi = y - ( f128_t ) n;
 
