@@ -1,12 +1,14 @@
 #include "public_math.h"
 #include "private_math.h"
 
-static i16_t    math_pow_safe_exp   ( f128_t y                          );
-static u32_t    math_pow_iabs       ( i32_t n                           );
-static f128_t   math_pow_impl       ( dnorm_t x, f128_t y               );
-static f128_t   math_pow_i16        ( f128_t x, i16_t n                 );
-static f128_t   math_pow_ydexp      ( i64_t zl, f128_t y,   f128_t dexp );
-static i64_t    math_pow_clamp      ( i64_t x,  i64_t xmin, i64_t xmax  );
+static i16_t    math_pow_safe_exp       ( f128_t y                          );
+static u32_t    math_pow_iabs           ( i32_t n                           );
+static f128_t   math_pow_i16            ( f128_t x, i16_t n                 );
+static f128_t   math_pow_ydexp          ( i64_t zl, f128_t y,   f128_t dexp );
+static i64_t    math_pow_clamp          ( i64_t x,  i64_t xmin, i64_t xmax  );
+static f128_t   math_pow_impl           ( dnorm_t x, f128_t y               );
+
+static f64_t    math_pow_finite_triage  ( f64_t x, f64_t y, bool_t is_int, bool_t is_even, u16_t xtype );
 
 extern f64_t math_pow(f64_t x, f64_t y)
 {
@@ -20,19 +22,38 @@ extern f64_t math_pow(f64_t x, f64_t y)
         case (GRADZ):
         case (FINITE):
         {
-            if( x > 0.0 )
-            {
-                if( x == 1.0 )
-                {
-                    result.f.d = 1.0;
-                }
+            const f64_t iy          = math_to_integer(y);
+            const bool_t is_pos     = x > 0.0;
+            const bool_t is_int     = math_type( iy - y ) == ZERO;
+            const bool_t is_even    = ( ( (u64_t) math_abs( iy ) ) % 2 ) == 0;
+            const u8_t   hash       = ( is_even << 2 ) | ( is_int << 1 ) | is_pos;
 
-                else if( math_intrnd( y ) == y )
+            switch ( hash )
+            {
+                case (0):
+                case (4):/* x00 */
+                {
+                    result.f.w[ W0 ] = NIL;
+                    break;
+                }
+                case(2):/* 010 */
+                {
+                    result.f.d = math_pow_i16( -x, y );
+                    break;
+                }
+                case(6):/* 110 */
+                {
+                    result.f.d = -math_pow_i16( -x, y );
+                    break;
+                }
+                case(3):
+                case(7):/* x11 */
                 {
                     result.f.d = math_pow_i16( x, y );
+                    break;
                 }
-
-                else
+                case(1):
+                case(5):/* x01 */
                 {
                     const dnorm_t xn = math_cwnormalize( x, result.type );
                     const f128_t z = y * xn.e;
@@ -50,140 +71,25 @@ extern f64_t math_pow(f64_t x, f64_t y)
                     {
                         result.f.d = math_pow_impl( xn, y );
                     }
-                }
-            }
-
-            else
-            {
-                if( math_intrnd( y ) == y )
-                {
-                    if( (i128_t)y%2==0 )
-                    {
-                        result.f.d = math_pow_i16( -x, y );
-                    }
-
-                    else
-                    {
-                        result.f.d = -math_pow_i16( -x, y );
-                    }
+                    break;
                 }
 
-                else
-                {
-                    result.f.w[ W0 ] = NIL;
-                }
+                default: { /* NOP: not possible */ break; }
             }
 
             break;
         }
 
         case (INF):
-        {
-            const f64_t iy = math_intrnd(y);
-
-            if( y == 0.0 )
-            {
-                result.f.d = 1.0;
-            }
-
-            else if( (x > 0.0) && (y < 0.0) )
-            {
-                result.f.d = +0.0;
-            }
-
-            else if( (x < 0.0) && (y < 0.0) && (iy == y) && ( (i128_t) iy % 2 != 0 ) )
-            {
-                result.f.w[ W0 ] = SMASK;
-            }
-
-            else if( (x < 0.0) && (y > 0.0) && (iy == y) && ( (i128_t) iy % 2 != 0 ) )
-            {
-                result.f.w[ W0 ] = SMASK | result.f.w[ W0 ];
-            }
-
-            else
-            {
-                /* NOP: already +inf */
-            }
-
-            break;
-        }
-
         case (NIL):
+        case (ZERO):
         {
             result.f.w[ W0 ] = NIL;
             break;
         }
-
-        case (ZERO): /* x^0 = 1, for all x >= 0, even 0^0 */
-        {
-            const f64_t iy = math_intrnd(y);
-
-            if( y == 0.0 )
-            {
-                result.f.d = +1.0;
-            }
-
-            else if( (y > 0.0) && (iy == y) && ( (i128_t) iy % 2 != 0 ) )
-            {
-                if( y == 1.0 )
-                {
-                    result.f.d = x;
-
-                    if( result.f.w[ W0 ] & SMASK )
-                    {
-                        result.f.w[ W0 ] = SMASK;
-                    }
-
-                    else
-                    {
-                        result.f.w[ W0 ] = ZERO;
-                    }
-
-                }
-                else
-                {
-                    result.f.d = -0.0;
-                }
-            }
-
-            else if( y > 0.0 )
-            {
-                result.f.d = +0.0;
-            }
-
-            else if( (y < 0.0) && (iy == y) && ( (i128_t) iy % 2 != 0 ) )
-            {
-                if( y == -1.0 )
-                {
-                    result.f.d = x;
-
-                    if( result.f.w[ W0 ] & SMASK )
-                    {
-                        result.f.w[ W0 ] = INF | SMASK;
-                    }
-
-                    else
-                    {
-                        result.f.w[ W0 ] = INF;
-                    }
-                }
-                else
-                {
-                    result.f.w[ W0 ] = SMASK | INF;
-                }
-            }
-
-            else if( y < 0.0 )
-            {
-                result.f.w[ W0 ] = INF;
-            }
-
-            break;
-        }
     }
 
-    return result.f.d;
+    return ( result.f.d );
 }
 
 /*
