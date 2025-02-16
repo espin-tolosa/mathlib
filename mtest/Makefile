@@ -11,14 +11,17 @@ endif
 
 COMPILE	:= $(CC) $(CCFLAGS) $(LDFLAGS)
 
-to_integer:
-	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe -frounding-math -fsignaling-nans
-
-sin:
-	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
-
-pow:
-	$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
-
 run_%:%
 	@./$(PREFIX)_$<.exe
+
+arithmetic:
+	@$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
+
+to_integer:
+	@$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe -frounding-math -fsignaling-nans
+
+sin:
+	@$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
+
+pow:
+	@$(COMPILE) $(PREFIX)_$@.c -o $(PREFIX)_$@.exe
