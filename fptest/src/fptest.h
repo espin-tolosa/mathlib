@@ -75,6 +75,21 @@ typedef enum
 } fpset_t;
 
 /*
+ * Fast2Sum, Fast2Mul return type
+ */
+
+typedef struct
+{
+    f32_t s;
+    f32_t t;
+} fp32_fast_t;
+typedef struct
+{
+    f64_t s;
+    f64_t t;
+} fp64_fast_t;
+
+/*
  * Triplet structure
  */
 
@@ -277,6 +292,12 @@ ADDAPI extern f64_t         ADDCALL fp64_benchmark_core_ns_per_call( fp_d2d_t te
 
 ADDAPI extern f32_t         ADDCALL fp32_benchmark_mock_fun( f32_t x );
 ADDAPI extern f64_t         ADDCALL fp64_benchmark_mock_fun( f64_t x );
+
+ADDAPI extern fp32_fast_t   ADDCALL fp32_fast2sum       ( f32_t a, f32_t b );
+ADDAPI extern fp32_fast_t   ADDCALL fp32_fast2mul       ( f32_t a, f32_t b );
+
+ADDAPI extern fp64_fast_t   ADDCALL fp64_fast2mul       ( f64_t a, f64_t b );
+ADDAPI extern fp64_fast_t   ADDCALL fp64_fast2sum       ( f64_t a, f64_t b );
 
 ADDAPI extern void          ADDCALL fp32_test_sqrt      ( fp_f2f_t      tested_sqrt     , bool_t active );
 ADDAPI extern void          ADDCALL fp32_test_exp       ( fp_f2f_t      tested_exp      , bool_t active );

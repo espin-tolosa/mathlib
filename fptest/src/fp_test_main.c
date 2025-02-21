@@ -3188,3 +3188,55 @@ extern void ADDCALL fp64_test_pow( f64_t (*tested_pow)(f64_t, f64_t) , bool_t ac
     }
 }
 /* << Tests */
+
+extern fp32_fast_t ADDCALL fp32_fast2sum( f32_t a, f32_t b )
+{
+    volatile fp32_fast_t ret;
+
+    volatile f32_t x;
+    volatile f32_t y;
+
+    if( fabs(a) > fabs(b) ) { x = a; y = b; }
+    else                    { x = b; y = a; }
+
+    ret.s = x + y;
+    ret.t = y - ( ret.s - x );
+
+    return ( ret );
+}
+
+extern fp64_fast_t ADDCALL fp64_fast2sum( f64_t a, f64_t b )
+{
+    volatile fp64_fast_t ret;
+
+    volatile f64_t x;
+    volatile f64_t y;
+
+    if( fabs(a) > fabs(b) ) { x = a; y = b; }
+    else                    { x = b; y = a; }
+
+    ret.s = x + y;
+    ret.t = y - ( ret.s - x );
+
+    return ( ret );
+}
+
+extern fp32_fast_t ADDCALL fp32_fast2mul( f32_t a, f32_t b )
+{
+    volatile fp32_fast_t ret;
+
+    ret.s = a * b;
+    ret.t = fmaf( a, b, -ret.s );
+
+    return ( ret );
+}
+
+extern fp64_fast_t ADDCALL fp64_fast2mul( f64_t a, f64_t b )
+{
+    volatile fp64_fast_t ret;
+
+    ret.s = a * b;
+    ret.t = fma( a, b, -ret.s );
+
+    return ( ret );
+}
