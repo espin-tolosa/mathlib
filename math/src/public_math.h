@@ -15,6 +15,8 @@ extern double math_cos          ( double x );
 extern double math_asin         ( double x );
 extern double math_pow          ( double x , double y);
 
+extern const char * math_print( double x );
+
 #define FP64_PI 	(3.1415926535897932384626433832795)
 
 
