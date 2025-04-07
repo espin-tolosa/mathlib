@@ -1,8 +1,8 @@
 #include "private_math.h"
-
 typedef struct
 {
-	f64_t g;
+	f64_t hi;
+	f64_t lo;
 	f64_t k;
 } rem_t;
 typedef enum
@@ -171,6 +171,8 @@ static f64_t math_sin_impl( f64_t x, qoff_t qoff )
 		}
 	}
 
+	rem = math_rem_mid_pio2( x, ix );
+
 	static const u32_t mask_cos = 0x1u;
 	static const u32_t mask_sin = 0x2u;
 	static const u64_t mask_all = 0x3u;
@@ -179,7 +181,7 @@ static f64_t math_sin_impl( f64_t x, qoff_t qoff )
 
 	if ( q & mask_cos )
 	{
-		if( ( -DBL_EPS < rem.g ) && ( rem.g < DBL_EPS ) )
+		if( ( -DBL_EPS < rem.hi ) && ( rem.hi < DBL_EPS ) )
 		{
 			result = 1.0;
 		}
@@ -198,15 +200,15 @@ static f64_t math_sin_impl( f64_t x, qoff_t qoff )
 				+1.0L,
 			};
 
-			result = math_horner( rem.g * rem.g, c, 8 );
+			result = rem.lo + math_horner( rem.hi * rem.hi, c, 8 );
 		}
 	}
 
 	else
 	{
-		if( ( -DBL_EPS < rem.g ) && ( rem.g < DBL_EPS ) )
+		if( ( -DBL_EPS < rem.hi ) && ( rem.hi < DBL_EPS ) )
 		{
-			result = rem.g;
+			result = rem.hi;
 		}
 
 		else
@@ -223,7 +225,7 @@ static f64_t math_sin_impl( f64_t x, qoff_t qoff )
 				+1.0L,
 			};
 
-			result = rem.g * math_horner( rem.g * rem.g, s, 8 );
+			result = rem.lo + rem.hi * math_horner( rem.hi * rem.hi, s, 8 );
 		}
 	}
 
@@ -240,7 +242,6 @@ static f64_t math_sin_impl( f64_t x, qoff_t qoff )
 	return ( result );
 }
 
-
 static rem_t math_rem_mid_pio2( f64_t x, u32_t ix )
 {
 	rem_t result;
@@ -252,19 +253,21 @@ static rem_t math_rem_mid_pio2( f64_t x, u32_t ix )
 	static const f64_t pio2_1t = 6.07710050650619224932e-11;
 	static const f64_t pio2_2  = 6.07710050630396597660e-11;
 	static const f64_t pio2_2t = 2.02226624879595063154e-21;
+	static const f64_t pio2_3  = 2.02226624871116645580e-21; /* 0x3BA3198A, 0x2E000000 */
+	static const f64_t pio2_3t = 8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 
 	static const u32_t moff32 = 20;
 
 	dw_t u		= { .d = x };
 
-	result.k	= ( (f64_t) ( x * invpio2 ) ) + toint - toint;
+	result.k	= ( ( (f64_t) ( x * invpio2 ) ) + toint ) - toint;
 
 	f64_t r		= x - ( result.k * pio2_1 );
 	f64_t w		= result.k * pio2_1t;
 
-	result.g	= r - w;
+	result.hi	= r - w;
 
-	u.d			= result.g;
+	u.d			= result.hi;
 
 	i32_t ey	= ( u.u >> ( DOFF + MOFF ) ) & DMAX;
 	i32_t ex	= ix >> moff32;
@@ -277,8 +280,22 @@ static rem_t math_rem_mid_pio2( f64_t x, u32_t ix )
 		r	= t - w;
 		w	= ( result.k * pio2_2t ) - ( ( t - r ) - w );
 
-		result.g	= r - w;
+		result.hi = r - w;
+
+		u.d = result.hi;
+		ey 	= ( u.u >> 52 ) & 0x7FF;
+
+		if( ( ex - ey ) > 49 )
+		{
+			t = r;
+			w = result.k * pio2_3;
+			r = t - w;
+			w = result.k * pio2_3t - ( ( t - r ) - w );
+			result.hi = r - w;
+		}
 	}
+
+	result.lo = ( r - result.hi ) - w;
 
 	return ( result );
 }
@@ -292,7 +309,7 @@ static rem_t math_rem_low_pio2( f64_t x )
 	static const f128_t c2		= 3.139164786504813216916397514421e-7L;
 
 	result.k	= math_intrnd( x * twobypi ) ;
-	result.g	= ( x - result.k * c1) - result.k * c2;
+	result.hi	= ( x - result.k * c1 ) - result.k * c2;
 
 	return ( result );
 }
